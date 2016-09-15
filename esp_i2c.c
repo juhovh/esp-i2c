@@ -1,18 +1,18 @@
-/* 
+/*
  * The MIT License (MIT)
- * 
+ *
  * Copyright (c) 2016 Juho Vähä-Herttua (juhovh@iki.fi)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -80,18 +80,13 @@ static unsigned char i2c_delay_us;
 static unsigned char i2c_sda, i2c_scl;
 static unsigned int i2c_cslimit;
 
-static void
-i2c_delay()
-{
-  os_delay_us(i2c_delay_us);
-}
+#define I2C_DELAY()   os_delay_us(i2c_delay_us)
+#define I2C_CLOCK_STRETCH() do {                \
+  unsigned int i=0;                             \
+  while (SCL_GET() == 0 && i++ < i2c_cslimit);  \
+} while(0)
 
-static void
-i2c_clock_stretch()
-{
-  unsigned int i = 0;
-  while (SCL_GET() == 0 && (i++) < i2c_cslimit);
-}
+
 
 static void
 i2c_set_gpio_pad_driver(unsigned char pin_no, unsigned char val)
@@ -102,14 +97,19 @@ i2c_set_gpio_pad_driver(unsigned char pin_no, unsigned char val)
   GPIO_REG_WRITE(pinaddr, status | GPIO_PIN_PAD_DRIVER_SET(val));
 }
 
-static void
+static unsigned char
 i2c_write_start()
 {
   SCL_SET(HIGH);
   SDA_SET(HIGH);
-  i2c_delay();
+  if (SDA_GET() == LOW) {
+    return 1;
+  }
+  I2C_DELAY();
   SDA_SET(LOW);
-  i2c_delay();
+  I2C_DELAY();
+
+  return 0;
 }
 
 static void
@@ -117,12 +117,12 @@ i2c_write_stop()
 {
   SCL_SET(LOW);
   SDA_SET(LOW);
-  i2c_delay();
+  I2C_DELAY();
   SCL_SET(HIGH);
-  i2c_clock_stretch();
-  i2c_delay();
+  I2C_CLOCK_STRETCH();
+  I2C_DELAY();
   SDA_SET(HIGH);
-  i2c_delay();
+  I2C_DELAY();
 }
 
 static void
@@ -130,10 +130,10 @@ i2c_write_bit(bool bit)
 {
   SCL_SET(LOW);
   SDA_SET(bit);
-  i2c_delay();
+  I2C_DELAY();
   SCL_SET(HIGH);
-  i2c_clock_stretch();
-  i2c_delay();
+  I2C_CLOCK_STRETCH();
+  I2C_DELAY();
 }
 
 static unsigned char
@@ -143,11 +143,11 @@ i2c_read_bit()
 
   SCL_SET(LOW);
   SDA_SET(HIGH);
-  i2c_delay();
+  I2C_DELAY();
   SCL_SET(HIGH);
-  i2c_clock_stretch();
+  I2C_CLOCK_STRETCH();
   bit = SDA_GET();
-  i2c_delay();
+  I2C_DELAY();
 
   return bit;
 }
@@ -163,7 +163,7 @@ i2c_write_byte(unsigned char byte)
   }
 
   // Read either ACK or NACK
-  return !i2c_read_bit();
+  return i2c_read_bit();
 }
 
 static unsigned char
@@ -180,7 +180,6 @@ i2c_read_byte(unsigned char nack)
 
   return byte;
 }
-
 
 
 
@@ -244,11 +243,14 @@ esp_i2c_read_buf(unsigned char address, unsigned char *buf, unsigned int len, un
 {
   unsigned int i;
 
-  i2c_write_start();
-  if (!i2c_write_byte(((address << 1) | 1) & 0xFF)) {
+  if (i2c_write_start()) {
+    // Received SDA low when writing start
+    return 1;
+  }
+  if (i2c_write_byte(((address << 1) | 1) & 0xFF)) {
     // Received NACK when writing address
     if (send_stop) i2c_write_stop();
-    return 1;
+    return 2;
   }
 
   for (i=0; i < len-1; i++) {
@@ -265,18 +267,21 @@ esp_i2c_write_buf(unsigned char address, unsigned char *buf, unsigned int len, u
 {
   unsigned int i;
 
-  i2c_write_start();
-  if (!i2c_write_byte((address << 1) & 0xFF)) {
+  if (i2c_write_start()) {
+    // Received SDA low when writing start
+    return 1;
+  }
+  if (i2c_write_byte((address << 1) & 0xFF)) {
     // Received NACK when writing address
     if (send_stop) i2c_write_stop();
-    return 1;
+    return 2;
   }
 
   for (i=0; i < len; i++) {
-    if (!i2c_write_byte(buf[i])) {
+    if (i2c_write_byte(buf[i])) {
       // Received NACK when writing data
       if (send_stop) i2c_write_stop();
-      return 2;
+      return 3;
     }
   }
   if (send_stop) i2c_write_stop();
