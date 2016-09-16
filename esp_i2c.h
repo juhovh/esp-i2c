@@ -28,12 +28,14 @@
 extern "C" {
 #endif
 
-void esp_i2c_init(unsigned char sda, unsigned char scl);
+#include <c_types.h>
+
+void esp_i2c_init(uint8 sda, uint8 scl);
 void esp_i2c_stop();
-void esp_i2c_set_clock(unsigned int freq);
-void esp_i2c_set_clock_stretch_limit(unsigned int limit);
-unsigned char esp_i2c_write_buf(unsigned char address, unsigned char *buf, unsigned int len, unsigned char send_stop);
-unsigned char esp_i2c_read_buf(unsigned char address, unsigned char *buf, unsigned int len, unsigned char send_stop);
+void esp_i2c_set_clock(uint32 freq);
+void esp_i2c_set_clock_stretch_limit(uint32 limit);
+uint8 esp_i2c_write_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop);
+uint8 esp_i2c_read_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop);
 
 #ifdef __cplusplus
 }

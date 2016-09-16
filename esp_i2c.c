@@ -28,7 +28,7 @@
 #include "gpio.h"
 #include "user_interface.h"
 
-static unsigned char __gpiomux[16] = {
+static uint8 __gpiomux[16] = {
   PERIPHS_IO_MUX_GPIO0_U,
   PERIPHS_IO_MUX_U0TXD_U,
   PERIPHS_IO_MUX_GPIO2_U,
@@ -46,7 +46,7 @@ static unsigned char __gpiomux[16] = {
   PERIPHS_IO_MUX_MTMS_U,
   PERIPHS_IO_MUX_MTDO_U
 };
-static unsigned char __gpiofunc[16] = {
+static uint8 __gpiofunc[16] = {
   FUNC_GPIO0,
   FUNC_GPIO1,
   FUNC_GPIO2,
@@ -76,28 +76,28 @@ static unsigned char __gpiofunc[16] = {
 #define SCL_SET(bit)  GPIO_OUTPUT_SET(i2c_scl, !!bit)
 #define SCL_GET()     GPIO_INPUT_GET(i2c_scl)
 
-static unsigned char i2c_delay_us;
-static unsigned char i2c_sda, i2c_scl;
-static unsigned int i2c_cslimit;
+static uint8 i2c_delay_us;
+static uint8 i2c_sda, i2c_scl;
+static uint32 i2c_cslimit;
 
 #define I2C_DELAY()   os_delay_us(i2c_delay_us)
 #define I2C_CLOCK_STRETCH() do {                \
-  unsigned int i=0;                             \
+  uint32 i=0;                             \
   while (SCL_GET() == 0 && i++ < i2c_cslimit);  \
 } while(0)
 
 
 
 static void
-i2c_set_gpio_pad_driver(unsigned char pin_no, unsigned char val)
+i2c_set_gpio_pad_driver(uint8 pin_no, uint8 val)
 {
-  unsigned int pinaddr = GPIO_PIN_ADDR(GPIO_ID_PIN(pin_no));
-  unsigned int status = GPIO_REG_READ(pinaddr) & (~GPIO_PIN_PAD_DRIVER_MASK);
+  uint32 pinaddr = GPIO_PIN_ADDR(GPIO_ID_PIN(pin_no));
+  uint32 status = GPIO_REG_READ(pinaddr) & (~GPIO_PIN_PAD_DRIVER_MASK);
 
   GPIO_REG_WRITE(pinaddr, status | GPIO_PIN_PAD_DRIVER_SET(val));
 }
 
-static unsigned char
+static uint8
 i2c_write_start()
 {
   SCL_SET(HIGH);
@@ -136,10 +136,10 @@ i2c_write_bit(bool bit)
   I2C_DELAY();
 }
 
-static unsigned char
+static uint8
 i2c_read_bit()
 {
-  unsigned char bit;
+  uint8 bit;
 
   SCL_SET(LOW);
   SDA_SET(HIGH);
@@ -152,10 +152,10 @@ i2c_read_bit()
   return bit;
 }
 
-static unsigned char
-i2c_write_byte(unsigned char byte)
+static uint8
+i2c_write_byte(uint8 byte)
 {
-  unsigned char bit;
+  uint8 bit;
 
   for (bit = 0; bit < 8; bit++) {
     i2c_write_bit(byte & 0x80);
@@ -166,11 +166,11 @@ i2c_write_byte(unsigned char byte)
   return i2c_read_bit();
 }
 
-static unsigned char
-i2c_read_byte(unsigned char nack)
+static uint8
+i2c_read_byte(uint8 nack)
 {
-  unsigned char byte = 0;
-  unsigned char bit;
+  uint8 byte = 0;
+  uint8 bit;
 
   for (bit = 0; bit < 8; bit++) {
     byte = (byte << 1);
@@ -184,7 +184,7 @@ i2c_read_byte(unsigned char nack)
 
 
 void
-esp_i2c_init(unsigned char sda, unsigned char scl)
+esp_i2c_init(uint8 sda, uint8 scl)
 {
   ETS_GPIO_INTR_DISABLE();
 
@@ -221,14 +221,14 @@ esp_i2c_stop()
 }
 
 void
-esp_i2c_set_clock(unsigned int freq)
+esp_i2c_set_clock(uint32 freq)
 {
   // Divide one second (in us) with frequency
   i2c_delay_us = 1000 / (freq / 1000);
 }
 
 void
-esp_i2c_set_clock_stretch_limit(unsigned int limit)
+esp_i2c_set_clock_stretch_limit(uint32 limit)
 {
   if (system_get_cpu_freq() == SYS_CPU_160MHZ) {
     i2c_cslimit = 2 * limit;
@@ -238,10 +238,10 @@ esp_i2c_set_clock_stretch_limit(unsigned int limit)
 }
 
 
-unsigned char
-esp_i2c_read_buf(unsigned char address, unsigned char *buf, unsigned int len, unsigned char send_stop)
+uint8
+esp_i2c_read_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop)
 {
-  unsigned int i;
+  uint32 i;
 
   if (i2c_write_start()) {
     // Received SDA low when writing start
@@ -262,10 +262,10 @@ esp_i2c_read_buf(unsigned char address, unsigned char *buf, unsigned int len, un
   return 0;
 }
 
-unsigned char
-esp_i2c_write_buf(unsigned char address, unsigned char *buf, unsigned int len, unsigned char send_stop)
+uint8
+esp_i2c_write_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop)
 {
-  unsigned int i;
+  uint32 i;
 
   if (i2c_write_start()) {
     // Received SDA low when writing start
