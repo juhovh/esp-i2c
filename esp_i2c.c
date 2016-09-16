@@ -28,6 +28,9 @@
 #include "gpio.h"
 #include "user_interface.h"
 
+#define DEFAULT_CLOCK     100000  // 100kHz
+#define DEFAULT_CS_LIMIT  800     // 800 80MHz cycles
+
 static uint8 __gpiomux[16] = {
   PERIPHS_IO_MUX_GPIO0_U,
   PERIPHS_IO_MUX_U0TXD_U,
@@ -202,8 +205,8 @@ esp_i2c_init(uint8 sda, uint8 scl)
   i2c_sda = sda;
   i2c_scl = scl;
 
-  esp_i2c_set_clock(100000);
-  esp_i2c_set_clock_stretch_limit(800);
+  esp_i2c_set_clock(DEFAULT_CLOCK);
+  esp_i2c_set_clock_stretch_limit(DEFAULT_CS_LIMIT);
 }
 
 void ICACHE_FLASH_ATTR
