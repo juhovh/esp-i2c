@@ -31,6 +31,12 @@
 #define DEFAULT_CLOCK     100000  // 100kHz
 #define DEFAULT_CS_LIMIT  800     // 800 80MHz cycles
 
+// FUNC_GPIO definitions missing from SDK headers
+#define FUNC_GPIO6  3
+#define FUNC_GPIO7  3
+#define FUNC_GPIO8  3
+#define FUNC_GPIO11 3
+
 static uint8 __gpiomux[16] = {
   PERIPHS_IO_MUX_GPIO0_U,
   PERIPHS_IO_MUX_U0TXD_U,
@@ -56,12 +62,12 @@ static uint8 __gpiofunc[16] = {
   FUNC_GPIO3,
   FUNC_GPIO4,
   FUNC_GPIO5,
-  FUNC_SDCLK,
-  FUNC_SDDATA0,
-  FUNC_SDDATA1,
+  FUNC_GPIO6,
+  FUNC_GPIO7,
+  FUNC_GPIO8,
   FUNC_GPIO9,
   FUNC_GPIO10,
-  FUNC_SDCMD,
+  FUNC_GPIO11,
   FUNC_GPIO12,
   FUNC_GPIO13,
   FUNC_GPIO14,
