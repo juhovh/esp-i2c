@@ -88,7 +88,7 @@ static uint32 i2c_cslimit;
 
 
 
-static void
+static void ICACHE_FLASH_ATTR
 i2c_set_gpio_pad_driver(uint8 pin_no, uint8 val)
 {
   uint32 pinaddr = GPIO_PIN_ADDR(GPIO_ID_PIN(pin_no));
@@ -97,7 +97,7 @@ i2c_set_gpio_pad_driver(uint8 pin_no, uint8 val)
   GPIO_REG_WRITE(pinaddr, status | GPIO_PIN_PAD_DRIVER_SET(val));
 }
 
-static uint8
+static uint8 ICACHE_FLASH_ATTR
 i2c_write_start()
 {
   SCL_SET(HIGH);
@@ -112,7 +112,7 @@ i2c_write_start()
   return 0;
 }
 
-static void
+static void ICACHE_FLASH_ATTR
 i2c_write_stop()
 {
   SCL_SET(LOW);
@@ -125,7 +125,7 @@ i2c_write_stop()
   I2C_DELAY();
 }
 
-static void
+static void ICACHE_FLASH_ATTR
 i2c_write_bit(bool bit)
 {
   SCL_SET(LOW);
@@ -136,7 +136,7 @@ i2c_write_bit(bool bit)
   I2C_DELAY();
 }
 
-static uint8
+static uint8 ICACHE_FLASH_ATTR
 i2c_read_bit()
 {
   uint8 bit;
@@ -152,7 +152,7 @@ i2c_read_bit()
   return bit;
 }
 
-static uint8
+static uint8 ICACHE_FLASH_ATTR
 i2c_write_byte(uint8 byte)
 {
   uint8 bit;
@@ -166,7 +166,7 @@ i2c_write_byte(uint8 byte)
   return i2c_read_bit();
 }
 
-static uint8
+static uint8 ICACHE_FLASH_ATTR
 i2c_read_byte(uint8 nack)
 {
   uint8 byte = 0;
@@ -183,7 +183,7 @@ i2c_read_byte(uint8 nack)
 
 
 
-void
+void ICACHE_FLASH_ATTR
 esp_i2c_init(uint8 sda, uint8 scl)
 {
   ETS_GPIO_INTR_DISABLE();
@@ -206,7 +206,7 @@ esp_i2c_init(uint8 sda, uint8 scl)
   esp_i2c_set_clock_stretch_limit(800);
 }
 
-void
+void ICACHE_FLASH_ATTR
 esp_i2c_stop()
 {
   ETS_GPIO_INTR_DISABLE();
@@ -220,14 +220,14 @@ esp_i2c_stop()
   ETS_GPIO_INTR_ENABLE();
 }
 
-void
+void ICACHE_FLASH_ATTR
 esp_i2c_set_clock(uint32 freq)
 {
   // Divide one second (in us) with frequency
   i2c_delay_us = 1000 / (freq / 1000);
 }
 
-void
+void ICACHE_FLASH_ATTR
 esp_i2c_set_clock_stretch_limit(uint32 limit)
 {
   if (system_get_cpu_freq() == SYS_CPU_160MHZ) {
@@ -238,7 +238,7 @@ esp_i2c_set_clock_stretch_limit(uint32 limit)
 }
 
 
-uint8
+uint8 ICACHE_FLASH_ATTR
 esp_i2c_read_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop)
 {
   uint32 i;
@@ -262,7 +262,7 @@ esp_i2c_read_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop)
   return 0;
 }
 
-uint8
+uint8 ICACHE_FLASH_ATTR
 esp_i2c_write_buf(uint8 address, uint8 *buf, uint32 len, uint8 send_stop)
 {
   uint32 i;
