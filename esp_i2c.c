@@ -74,20 +74,20 @@ static uint8 __gpiofunc[16] = {
   FUNC_GPIO15
 };
 
-#define PERIPHS_IO_MUX_GPIO(pin_no)  (PERIPHS_IO_MUX + __gpiomux[pin_no & 0x0f])
-#define FUNC_GPIO(pin_no)            (__gpiofunc[pin_no & 0x0f])
+#define PERIPHS_IO_MUX_GPIO(pin_no)  (PERIPHS_IO_MUX + __gpiomux[(pin_no) & 0x0f])
+#define FUNC_GPIO(pin_no)            (__gpiofunc[(pin_no) & 0x0f])
 
 #define HIGH  1
 #define LOW   0
 
-#define SDA_SET(bit)  GPIO_OUTPUT_SET(i2c_sda, !!bit)
-#define SDA_GET()     GPIO_INPUT_GET(i2c_sda)
-#define SCL_SET(bit)  GPIO_OUTPUT_SET(i2c_scl, !!bit)
-#define SCL_GET()     GPIO_INPUT_GET(i2c_scl)
-
-static uint8 i2c_delay_us;
 static uint8 i2c_sda, i2c_scl;
+static uint8 i2c_delay_us;
 static uint32 i2c_cslimit;
+
+#define SDA_SET(bit)  GPIO_OUTPUT_SET(i2c_sda, !!(bit))
+#define SDA_GET()     GPIO_INPUT_GET(i2c_sda)
+#define SCL_SET(bit)  GPIO_OUTPUT_SET(i2c_scl, !!(bit))
+#define SCL_GET()     GPIO_INPUT_GET(i2c_scl)
 
 #define I2C_DELAY()   os_delay_us(i2c_delay_us)
 #define I2C_CLOCK_STRETCH() do {                \
