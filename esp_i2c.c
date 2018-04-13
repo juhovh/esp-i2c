@@ -37,7 +37,7 @@
 #define FUNC_GPIO8  3
 #define FUNC_GPIO11 3
 
-static uint8 __gpiomux[16] = {
+static uint32 __gpiomux[16] = {
   PERIPHS_IO_MUX_GPIO0_U,
   PERIPHS_IO_MUX_U0TXD_U,
   PERIPHS_IO_MUX_GPIO2_U,
@@ -74,7 +74,7 @@ static uint8 __gpiofunc[16] = {
   FUNC_GPIO15
 };
 
-#define PERIPHS_IO_MUX_GPIO(pin_no)  (PERIPHS_IO_MUX + __gpiomux[(pin_no) & 0x0f])
+#define PERIPHS_IO_MUX_GPIO(pin_no)  (__gpiomux[(pin_no) & 0x0f])
 #define FUNC_GPIO(pin_no)            (__gpiofunc[(pin_no) & 0x0f])
 
 #define HIGH  1
